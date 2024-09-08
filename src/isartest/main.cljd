@@ -3,56 +3,19 @@
             [cljd.flutter :as f]
             ["package:isar/isar.dart" :as isar]
             ["package:path_provider/path_provider.dart" :as path-provider]
-            ["models/entry.dart" :as entry]))
+            ["models/user.dart" :as user]))
 
 (defn main []
-  (-> (path-provider/getApplicationDocumentsDirectory)
-      (.then (fn [dir]
-               (isar/openIsar
-                 :schemas [entry/Entry]
-                 :directory (.-path dir))))
-      (.then (fn [isar]
-               (f/run
-                 (m/MaterialApp
-                   .title "Isar Test"
-                   .theme (m/ThemeData .primarySwatch m.Colors/pink)
-                   .home (HomePage .isar isar)))))))
-
-(defn add-entry [isar]
-  (let [new-entry (entry/Entry .name "foo")]
-    (-> (.writeTxn isar #(.put (.collection isar entry/Entry) new-entry))
-        (.then (fn [_] (print "Entry added successfully"))))))
-
-(defn get-entry [isar id]
-  (.get (.collection isar entry/Entry) id))
-
-(defn delete-entry [isar id]
-  (-> (.writeTxn isar #(.delete (.collection isar entry/Entry) id))
-      (.then (fn [_] (print "Entry deleted successfully")))))
-
-(defcomponent HomePage [isar]
-  (let [!last-id (atom nil)]
-    (f/widget
-      (m/Scaffold
-        .appBar (m/AppBar
-                  .title (m/Text "Isar Test"))
-        .body
-        (m/Center
-          (m/Column
-            .mainAxisAlignment m.MainAxisAlignment/center
-            .children
-            [(m/Text "Press the buttons to interact with the database")
-             (m/ElevatedButton
-               .onPressed #(-> (add-entry isar)
-                               (.then (fn [id] (reset! !last-id id))))
-               .child (m/Text "Add Entry"))
-             (m/ElevatedButton
-               .onPressed #(when-let [id @!last-id]
-                             (-> (get-entry isar id)
-                                 (.then (fn [entry]
-                                          (print (str "Retrieved entry: " entry))))))
-               .child (m/Text "Get Last Entry"))
-             (m/ElevatedButton
-               .onPressed #(when-let [id @!last-id]
-                             (delete-entry isar id))
-               .child (m/Text "Delete Last Entry"))]))))))
+  (f/run
+    (m/MaterialApp
+      .title "Welcome to Flutter"
+      .theme (m/ThemeData .primarySwatch m.Colors/pink))
+    .home
+    (m/Scaffold
+      .appBar (m/AppBar
+                .title (m/Text "Welcome to ClojureDart")))
+    .body
+    m/Center
+    (m/Text "Let's get coding!"
+       .style (m/TextStyle
+                .fontSize 32.0))))
