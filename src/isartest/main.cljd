@@ -3,26 +3,48 @@
             [cljd.flutter :as f]
             ["package:isar/isar.dart" :as isar]
             ["package:path_provider/path_provider.dart" :as path-provider]
-            ["models/user.dart" :as user]))
+            ["models/user.dart" :as user]
+            [promesa.core :as p]))
+
+(defonce db-instance (atom nil))
+
+(defn init-db []
+  (p/let [dir (.getApplicationDocumentsDirectory path-provider)
+          db (isar/Isar.open
+               #js[user/User]
+               #js{:directory (.-path dir)})]
+    (reset! db-instance db)))
+
+(defn insert-dummy-user []
+  (when-let [db @db-instance]
+    (p/let [new-user (user/User)
+            _ (set! (.-name new-user) "John Doe")
+            _ (set! (.-age new-user) 30)
+            _ (.writeTxn db #(p/let [_ (.put (.-users db) new-user)]))]
+      (println "Dummy user inserted successfully!"))))
 
 (defn main []
   (f/run
-    (m/MaterialApp
-      .title "Welcome to Flutter"
-      .theme (m/ThemeData .primarySwatch m.Colors/pink))
-    .home
-    (m/Scaffold
-      .appBar (m/AppBar
-                .title (m/Text "Welcome to ClojureDart")))
-    .body
-    m/Center
-    (m/Column
-      .mainAxisAlignment m.MainAxisAlignment/center
-      .children
-      [(m/Text "Let's get coding!"
-         .style (m/TextStyle
-                  .fontSize 32.0))
-       (m/SizedBox .height 20)
-       (m/ElevatedButton
-         .onPressed (fn [] (println "Button pressed!"))
-         .child (m/Text "Press me!"))])))
+    (p/do
+      (init-db)
+      (m/MaterialApp
+        .title "Welcome to Flutter"
+        .theme (m/ThemeData .primarySwatch m.Colors/pink))
+      .home
+      (m/Scaffold
+        .appBar (m/AppBar
+                  .title (m/Text "Welcome to ClojureDart")))
+      .body
+      m/Center
+      (m/Column
+        .mainAxisAlignment m.MainAxisAlignment/center
+        .children
+        [(m/Text "Let's get coding!"
+           .style (m/TextStyle
+                    .fontSize 32.0))
+         (m/SizedBox .height 20)
+         (m/ElevatedButton
+           .onPressed (fn [] 
+                        (insert-dummy-user)
+                        (println "Button pressed! Inserting dummy user..."))
+           .child (m/Text "Insert Dummy User"))]))))
