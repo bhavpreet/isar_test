@@ -10,41 +10,41 @@
 (defn init-db []
   (let [dir (await (path-provider/getApplicationDocumentsDirectory))]
     (reset! db-instance (await (isar/Isar.open
-                                [user/User.schema]
+                                [user/UserSchema]
                                 :directory (.-path dir))))))
 
 (defn insert-dummy-user []
-  (when-let [db @db-instance]
-    (let [new-user (user/User)]
-      (set! (.-name new-user) "John Doe")
-      (set! (.-age new-user) 30)
-      (-> (.writeTxn db (fn [] (await (.put (.-users db) new-user))))
-          (.then (fn [_] (println "Dummy user inserted successfully!")))))))
+  (let [^isar/Isar db @db-instance
+        new-user (user/User)]
+    (set! (.-name new-user) "John Doe")
+    (set! (.-age new-user) 30)
+    (await (.writeTxn db (fn [] (await (.put (.-users ^isar/Isar db) new-user)))))
+           (println "Dummy user inserted successfully!")))
 
 (defn main []
   (m/WidgetsFlutterBinding.ensureInitialized)
-  (-> (init-db)
-      (.then (fn [_]
-               (f/run
-                 (m/MaterialApp
-      .title "Welcome to Flutter"
-      .theme (m/ThemeData .primarySwatch m.Colors/pink)
-      .home
-      (m/Scaffold
+  (init-db)
+  (fn [_]
+    (f/run
+      (m/MaterialApp
+       .title "Welcome to Flutter"
+       .theme (m/ThemeData .primarySwatch m.Colors/pink)
+       .home
+       (m/Scaffold
         .appBar (m/AppBar
-                  .title (m/Text "Welcome to ClojureDart"))
+                 .title (m/Text "Welcome to ClojureDart"))
         .body
         (m/Center
-          .child
-          (m/Column
-            .mainAxisAlignment m.MainAxisAlignment/center
-            .children
-            [(m/Text "Let's get coding!"
-               .style (m/TextStyle
-                        .fontSize 32.0))
-             (m/SizedBox .height 20)
-             (m/ElevatedButton
-               .onPressed (fn []
-                            (insert-dummy-user)
-                            (println "Button pressed! Inserting dummy user..."))
-               .child (m/Text "Insert Dummy User"))])))))))))
+         .child
+         (m/Column
+          .mainAxisAlignment m.MainAxisAlignment/center
+          .children
+          [(m/Text "Let's get coding!"
+                   .style (m/TextStyle
+                           .fontSize 32.0))
+           (m/SizedBox .height 20)
+           (m/ElevatedButton
+            .onPressed (fn []
+                         (insert-dummy-user)
+                         (println "Button pressed! Inserting dummy user..."))
+            .child (m/Text "Insert Dummy User"))])))))))
