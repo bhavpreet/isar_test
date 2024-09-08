@@ -25,9 +25,11 @@
           (.then (fn [_] (println "Dummy user inserted successfully!")))))))
 
 (defn main []
-  (init-db)
-  (f/run
-    (m/MaterialApp
+  (m/WidgetsFlutterBinding.ensureInitialized)
+  (-> (init-db)
+      (.then (fn [_]
+               (f/run
+                 (m/MaterialApp
       .title "Welcome to Flutter"
       .theme (m/ThemeData .primarySwatch m.Colors/pink)
       .home
