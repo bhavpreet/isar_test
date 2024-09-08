@@ -35,6 +35,7 @@
                   .title (m/Text "Welcome to ClojureDart"))
         .body
         (m/Center
+          .child
           (m/Column
             .mainAxisAlignment m.MainAxisAlignment/center
             .children
