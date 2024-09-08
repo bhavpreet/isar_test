@@ -16,6 +16,13 @@
                 .title (m/Text "Welcome to ClojureDart")))
     .body
     m/Center
-    (m/Text "Let's get coding!"
-       .style (m/TextStyle
-                .fontSize 32.0))))
+    (m/Column
+      .mainAxisAlignment m.MainAxisAlignment/center
+      .children
+      [(m/Text "Let's get coding!"
+         .style (m/TextStyle
+                  .fontSize 32.0))
+       (m/SizedBox .height 20)
+       (m/ElevatedButton
+         .onPressed (fn [] (println "Button pressed!"))
+         .child (m/Text "Press me!"))]))))
