@@ -25,6 +25,7 @@
           (.then (fn [_] (println "Dummy user inserted successfully!")))))))
 
 (defn main []
+  (init-db)
   (f/run
     (m/MaterialApp
       .title "Welcome to Flutter"
@@ -47,7 +48,4 @@
                .onPressed (fn []
                             (insert-dummy-user)
                             (println "Button pressed! Inserting dummy user..."))
-               .child (m/Text "Insert Dummy User"))]))))
-    .initState (fn [state]
-                 (init-db)
-                 state)))
+               .child (m/Text "Insert Dummy User"))]))))))
