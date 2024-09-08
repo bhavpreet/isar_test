@@ -12,7 +12,7 @@
       (.then (fn [dir]
                (isar/Isar.open
                  [user/User]
-                 {:directory (.-path dir)})))
+                 .directory (.-path dir))))
       (.then (fn [db]
                (reset! db-instance db)))))
 
