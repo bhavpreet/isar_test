@@ -24,21 +24,40 @@
                    .home (HomePage .isar isar)))))))
 
 (defn add-entry [isar]
-  (let [entry (Entry. nil "foo")]
-    (-> (.writeTxn isar #(.put (.collection isar Entry) entry) :silent true)
+  (let [entry (Entry. isar/Isar.autoIncrement "foo")]
+    (-> (.writeTxn isar #(.put (.collection isar Entry) entry))
         (.then (fn [_] (print "Entry added successfully"))))))
 
+(defn get-entry [isar id]
+  (.get (.collection isar Entry) id))
+
+(defn delete-entry [isar id]
+  (-> (.writeTxn isar #(.delete (.collection isar Entry) id))
+      (.then (fn [_] (print "Entry deleted successfully")))))
+
 (defcomponent HomePage [isar]
-  (f/widget
-    (m/Scaffold
-      .appBar (m/AppBar
-                .title (m/Text "Isar Test"))
-      .body
-      (m/Center
-        (m/Column
-          .mainAxisAlignment m.MainAxisAlignment/center
-          .children
-          [(m/Text "Press the button to add an entry")
-           (m/ElevatedButton
-             .onPressed #(add-entry isar)
-             .child (m/Text "Add Entry"))])))))
+  (let [!last-id (atom nil)]
+    (f/widget
+      (m/Scaffold
+        .appBar (m/AppBar
+                  .title (m/Text "Isar Test"))
+        .body
+        (m/Center
+          (m/Column
+            .mainAxisAlignment m.MainAxisAlignment/center
+            .children
+            [(m/Text "Press the buttons to interact with the database")
+             (m/ElevatedButton
+               .onPressed #(-> (add-entry isar)
+                               (.then (fn [id] (reset! !last-id id))))
+               .child (m/Text "Add Entry"))
+             (m/ElevatedButton
+               .onPressed #(when-let [id @!last-id]
+                             (-> (get-entry isar id)
+                                 (.then (fn [entry]
+                                          (print (str "Retrieved entry: " entry))))))
+               .child (m/Text "Get Last Entry"))
+             (m/ElevatedButton
+               .onPressed #(when-let [id @!last-id]
+                             (delete-entry isar id))
+               .child (m/Text "Delete Last Entry"))]))))))
