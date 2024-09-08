@@ -1,19 +1,44 @@
 (ns isartest.main
   (:require ["package:flutter/material.dart" :as m]
-            [cljd.flutter :as f]))
+            [cljd.flutter :as f]
+            ["package:isar/isar.dart" :as isar]
+            ["package:path_provider/path_provider.dart" :as path-provider]))
+
+(deftype Entry [^:isar/id id ^String name]
+  Object
+  (toString [_] (str "Entry(id=" id ", name=" name ")")))
+
+(isar/collection Entry)
 
 (defn main []
-  (f/run
-    (m/MaterialApp
-      .title "Welcome to Flutter"
-      .theme (m/ThemeData .primarySwatch m.Colors/pink))
-    .home
+  (-> (path-provider/getApplicationDocumentsDirectory)
+      (.then (fn [dir]
+               (isar/openIsar
+                 :schemas [Entry]
+                 :directory (.-path dir))))
+      (.then (fn [isar]
+               (f/run
+                 (m/MaterialApp
+                   .title "Isar Test"
+                   .theme (m/ThemeData .primarySwatch m.Colors/pink)
+                   .home (HomePage .isar isar)))))))
+
+(defn add-entry [isar]
+  (let [entry (Entry. nil "foo")]
+    (-> (.writeTxn isar #(.put (.collection isar Entry) entry) :silent true)
+        (.then (fn [_] (print "Entry added successfully"))))))
+
+(defcomponent HomePage [isar]
+  (f/widget
     (m/Scaffold
       .appBar (m/AppBar
-                .title (m/Text "Welcome to ClojureDart")))
-    .body
-    m/Center
-    (m/Text "Let's get coding!"
-       .style (m/TextStyle
-                .color m.Colors/red
-                .fontSize 32.0))))
+                .title (m/Text "Isar Test"))
+      .body
+      (m/Center
+        (m/Column
+          .mainAxisAlignment m.MainAxisAlignment/center
+          .children
+          [(m/Text "Press the button to add an entry")
+           (m/ElevatedButton
+             .onPressed #(add-entry isar)
+             .child (m/Text "Add Entry"))])))))
