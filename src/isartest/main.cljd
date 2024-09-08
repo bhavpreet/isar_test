@@ -8,20 +8,17 @@
 (defonce db-instance (atom nil))
 
 (defn init-db []
-  (-> (path-provider/getApplicationDocumentsDirectory)
-      (.then (fn [dir]
-               (isar/Isar.open
-                 [user/User]
-                 .directory (.-path dir))))
-      (.then (fn [db]
-               (reset! db-instance db)))))
+  (let [dir (await (path-provider/getApplicationDocumentsDirectory))]
+    (reset! db-instance (await (isar/Isar.open
+                                [user/User]
+                                .directory (.-path dir))))))
 
 (defn insert-dummy-user []
   (when-let [db @db-instance]
     (let [new-user (user/User)]
       (set! (.-name new-user) "John Doe")
       (set! (.-age new-user) 30)
-      (-> (.writeTxn db (fn [] (.put (.-users db) new-user)))
+      (-> (.writeTxn db (fn [] (await (.put (.-users db) new-user))))
           (.then (fn [_] (println "Dummy user inserted successfully!")))))))
 
 (defn main []
@@ -50,4 +47,4 @@
                .onPressed (fn []
                             (insert-dummy-user)
                             (println "Button pressed! Inserting dummy user..."))
-               .child (m/Text "Insert Dummy User"))]))))))
+               .child (m/Text "Insert Dummy User"))])))))))))
