@@ -10,8 +10,8 @@
 (defn init-db []
   (let [dir (await (path-provider/getApplicationDocumentsDirectory))]
     (reset! db-instance (await (isar/Isar.open
-                                [user/User]
-                                .directory (.-path dir))))))
+                                #js [user/User.schema]
+                                :directory (.-path dir))))))
 
 (defn insert-dummy-user []
   (when-let [db @db-instance]
