@@ -11,7 +11,7 @@
   (let [dir (await (path-provider/getApplicationDocumentsDirectory))]
     (reset! db-instance (await (isar/Isar.open
                                 [user/UserSchema]
-                                :directory (.-path dir))))))
+                                .directory (.-path dir))))))
 
 (defn insert-dummy-user []
   (let [^isar/Isar db @db-instance
@@ -23,28 +23,28 @@
 
 (defn main []
   (m/WidgetsFlutterBinding.ensureInitialized)
-  (init-db)
-  (fn [_]
-    (f/run
-      (m/MaterialApp
-       .title "Welcome to Flutter"
-       .theme (m/ThemeData .primarySwatch m.Colors/pink)
-       .home
-       (m/Scaffold
-        .appBar (m/AppBar
-                 .title (m/Text "Welcome to ClojureDart"))
-        .body
-        (m/Center
-         .child
-         (m/Column
-          .mainAxisAlignment m.MainAxisAlignment/center
-          .children
-          [(m/Text "Let's get coding!"
-                   .style (m/TextStyle
-                           .fontSize 32.0))
-           (m/SizedBox .height 20)
-           (m/ElevatedButton
-            .onPressed (fn []
-                         (insert-dummy-user)
-                         (println "Button pressed! Inserting dummy user..."))
-            .child (m/Text "Insert Dummy User"))])))))))
+  (f/run
+    (do (init-db)
+        (m/MaterialApp
+         .title "Welcome to Flutter"
+         .theme (m/ThemeData .primarySwatch m.Colors/pink)
+         .home
+         (m/Scaffold
+          .appBar (m/AppBar
+                   .title (m/Text "Welcome to ClojureDart"))
+          .body
+          (m/Center
+           .child
+           (m/Column
+            .mainAxisAlignment m.MainAxisAlignment/center
+            .children
+            [(m/Text "Let's get coding!"
+                     .style (m/TextStyle
+                             .fontSize 32.0))
+             (m/SizedBox .height 20)
+             (m/ElevatedButton
+              .onPressed (fn []
+                           (insert-dummy-user)
+                           (println "Button pressed! Inserting dummy user..."))
+              .child (m/Text "Insert Dummy User"))
+             ])))))))
